@@ -1,46 +1,48 @@
-name: Release
-
-on:
-  push:
-    tags:
-      - 'v*'
-
 jobs:
-  build-and-publish:
+  build:
     runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - run: |
+          python -m pip install --upgrade pip
+          pip install build pyinstaller
+          pip install -r requirements.txt
+
+      - run: python -m build
+
+      - run: |
+          pyinstaller --clean --noconfirm --onefile --name gmail-cleaner gmail_cleaner/main.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/*
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
+            dist/gmail-cleaner.exe
+
+  publish-pypi:
+    needs: build
+    runs-on: ubuntu-latest
+
     permissions:
-      contents: write
       id-token: write
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.14"
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install build pyinstaller
-
-    - name: Build Python Package
-      run: python -m build
-
-    - name: Build Windows Executable
-      run: |
-        pyinstaller --name gmail-cleaner --onefile gmail_cleaner/main.py
-
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          dist/*.whl
-          dist/*.tar.gz
-          dist/gmail-cleaner.exe
-        generate_release_notes: true
-
-    - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: pypa/gh-action-pypi-publish@release/v1

@@ -14,34 +14,59 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout
+        uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13"
+          cache: pip
 
-      - run: |
+      - name: Install dependencies
+        shell: pwsh
+        run: |
           python -m pip install --upgrade pip
+          if (Test-Path requirements.txt) {
+            pip install -r requirements.txt
+          }
           pip install build pyinstaller
-          pip install -r requirements.txt
 
-      - run: python -m build
+      - name: Build Python Package
+        run: python -m build
 
-      - run: |
-          pyinstaller --clean --noconfirm --onefile --name gmail-cleaner gmail_cleaner/main.py
+      - name: Build Windows Executable
+        run: |
+          pyinstaller `
+            --clean `
+            --noconfirm `
+            --onefile `
+            --distpath release `
+            --name gmail-cleaner `
+            gmail_cleaner/main.py
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload Python Distributions
+        uses: actions/upload-artifact@v4
         with:
-          name: dist
-          path: dist/*
+          name: python-dist
+          path: |
+            dist/*.whl
+            dist/*.tar.gz
 
-      - uses: softprops/action-gh-release@v2
+      - name: Upload Windows Executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-exe
+          path: release/gmail-cleaner.exe
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           files: |
             dist/*.whl
             dist/*.tar.gz
-            dist/gmail-cleaner.exe
+            release/gmail-cleaner.exe
 
   publish-pypi:
     needs: build
@@ -50,10 +75,15 @@ jobs:
     permissions:
       id-token: write
 
+    environment:
+      name: pypi
+
     steps:
-      - uses: actions/download-artifact@v4
+      - name: Download Python Distributions
+        uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: python-dist
           path: dist
 
-      - uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

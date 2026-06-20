@@ -1,24 +1,17 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "gmail_cleaner"
 version = "0.1.0"
 authors = [
-  { name="Mayank Gupta", email="mayankgupta690@gmail.com" },
+  { name = "Mayank Gupta", email = "mayankgupta690@gmail.com" },
 ]
 description = "A powerful local CLI tool to sync, cluster, and surgically clean your Gmail."
 readme = "README.md"
 requires-python = ">=3.8"
-license = {text = "MIT"}
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "Operating System :: OS Independent",
-]
 
-[tool.setuptools]
-packages = ["gmail_cleaner"]
 dependencies = [
     "google-api-python-client",
     "google-auth-httplib2",
@@ -30,6 +23,9 @@ dependencies = [
 
 [project.scripts]
 gmail-cleaner = "gmail_cleaner.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

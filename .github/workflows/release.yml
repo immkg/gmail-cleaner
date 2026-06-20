@@ -1,3 +1,14 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  id-token: write
+
 jobs:
   build:
     runs-on: windows-latest

@@ -1,0 +1,6 @@
+*.db
+credentials.json
+token.json
+token_read.json
+__pycache__/
+.env

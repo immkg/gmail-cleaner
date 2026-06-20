@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-publish:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install build pyinstaller
+
+    - name: Build Python Package
+      run: python -m build
+
+    - name: Build Windows Executable
+      run: |
+        pyinstaller --name gmail-cleaner --onefile gmail_cleaner/main.py
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          dist/*.whl
+          dist/*.tar.gz
+          dist/gmail-cleaner.exe
+        generate_release_notes: true
+
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1

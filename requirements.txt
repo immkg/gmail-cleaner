@@ -1,0 +1,11 @@
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+pandas
+scikit-learn
+tqdm
+pytest
+pytest-cov
+build
+twine
+pyinstaller

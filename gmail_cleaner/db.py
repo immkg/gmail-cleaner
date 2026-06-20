@@ -1,5 +1,6 @@
 import sqlite3
-from .config import DB_FILE
+from gmail_cleaner.config import DB_FILE
+
 
 def init_db():
     conn = sqlite3.connect(
@@ -48,12 +49,14 @@ def init_db():
     conn.commit()
     return conn
 
+
 def get_state(conn, key):
     row = conn.execute(
         "SELECT value FROM sync_state WHERE key=?",
         (key,)
     ).fetchone()
     return row[0] if row else None
+
 
 def set_state(conn, key, value):
     conn.execute(

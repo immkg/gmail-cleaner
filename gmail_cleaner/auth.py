@@ -8,7 +8,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from .config import SCOPES, TOKEN_FILE, CREDS_FILE, MAX_RETRIES
+from gmail_cleaner.config import SCOPES, TOKEN_FILE, CREDS_FILE, MAX_RETRIES
+
 
 def get_gmail_service():
     creds = None
@@ -20,13 +21,15 @@ def get_gmail_service():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(CREDS_FILE, SCOPES)
+            flow = InstalledAppFlow.from_client_secrets_file(
+                CREDS_FILE, SCOPES)
             creds = flow.run_local_server(port=0)
 
         with open(TOKEN_FILE, "w") as f:
             f.write(creds.to_json())
 
     return build("gmail", "v1", credentials=creds, cache_discovery=False)
+
 
 def gmail_call(request):
     for attempt in range(MAX_RETRIES):
@@ -37,11 +40,13 @@ def gmail_call(request):
             status = getattr(e.resp, "status", None)
             if status in (429, 500, 502, 503, 504):
                 wait = min(60, 2 ** attempt) + random.random()
-                print(f"\nHTTP {status} retry {attempt+1}/{MAX_RETRIES} wait={wait:.1f}s")
+                print(
+                    f"\nHTTP {status} retry {attempt+1}/{MAX_RETRIES} wait={wait:.1f}s")
                 time.sleep(wait)
                 continue
             raise
     raise RuntimeError("Max retries exceeded")
+
 
 def trash_email(gmail_id):
     service = get_gmail_service()

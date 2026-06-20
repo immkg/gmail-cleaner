@@ -8,7 +8,8 @@ from sklearn.cluster import MiniBatchKMeans
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction import text as sklearn_text
 
-from .config import DB_FILE, AUTO_DELETE_EMAIL_PATTERNS, PROTECTED_EMAIL_PATTERNS
+from gmail_cleaner.config import DB_FILE, AUTO_DELETE_EMAIL_PATTERNS, PROTECTED_EMAIL_PATTERNS
+
 
 def matches_pattern(email, patterns):
     email = (email or "").lower()
@@ -22,8 +23,10 @@ def matches_pattern(email, patterns):
             return True
     return False
 
+
 def extract_email(sender):
     return parseaddr(sender or "")[1].lower()
+
 
 def extract_domain(sender):
     email = extract_email(sender)
@@ -31,15 +34,19 @@ def extract_domain(sender):
         return "(unknown)"
     return email.split("@", 1)[1].lower()
 
+
 def canonical_email(sender):
     email = extract_email(sender)
     return email.lower() if email else ""
 
+
 def matches_auto_delete(email):
     return matches_pattern(email, AUTO_DELETE_EMAIL_PATTERNS)
 
+
 def matches_protected(email):
     return matches_pattern(email, PROTECTED_EMAIL_PATTERNS)
+
 
 def load_data():
     conn = sqlite3.connect(DB_FILE)
@@ -58,6 +65,7 @@ def load_data():
     df["domain"] = df["sender"].fillna("").apply(extract_domain)
 
     return df
+
 
 def run_analysis():
     df = load_data()
@@ -101,12 +109,14 @@ def run_analysis():
     print("\nTOPIC CLUSTERS")
     print("-" * 100)
     documents = df["subject"].fillna("") + " " + df["snippet"].fillna("")
-    vectorizer = TfidfVectorizer(stop_words="english", max_features=5000, min_df=5)
-    
+    vectorizer = TfidfVectorizer(
+        stop_words="english", max_features=5000, min_df=5)
+
     if len(documents) > 0:
         X = vectorizer.fit_transform(documents)
         cluster_count = min(20, max(2, len(df) // 100))
-        model = MiniBatchKMeans(n_clusters=cluster_count, random_state=42, batch_size=2048)
+        model = MiniBatchKMeans(n_clusters=cluster_count,
+                                random_state=42, batch_size=2048)
         model.fit(X)
         terms = vectorizer.get_feature_names_out()
 

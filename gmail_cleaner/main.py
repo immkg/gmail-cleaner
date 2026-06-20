@@ -1,10 +1,10 @@
 import argparse
 
-from .db import init_db, get_state
-from .auth import get_gmail_service
-from .sync import full_sync, incremental_sync
-from .analyze import run_analysis
-from .delete import run_delete_flow
+from gmail_cleaner.db import init_db, get_state
+from gmail_cleaner.auth import get_gmail_service
+from gmail_cleaner.sync import full_sync, incremental_sync
+from gmail_cleaner.analyze import run_analysis
+from gmail_cleaner.delete import run_delete_flow
 
 
 def sync_command(args):
@@ -46,8 +46,10 @@ def main():
     parser_analyze.set_defaults(func=analyze_command)
 
     # Clean
-    parser_clean = subparsers.add_parser("clean", help="Interactive CLI to bulk delete emails")
-    parser_clean.add_argument("--dry-run", action="store_true", help="Simulate deletion without calling Gmail API")
+    parser_clean = subparsers.add_parser(
+        "clean", help="Interactive CLI to bulk delete emails")
+    parser_clean.add_argument("--dry-run", action="store_true",
+                              help="Simulate deletion without calling Gmail API")
     parser_clean.set_defaults(func=clean_command)
 
     args = parser.parse_args()

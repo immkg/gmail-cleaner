@@ -4,9 +4,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
 from tqdm import tqdm
 
-from .config import MAX_WORKERS, COMMIT_BATCH
-from .db import set_state
-from .auth import gmail_call, get_gmail_service
+from gmail_cleaner.config import MAX_WORKERS, COMMIT_BATCH
+from gmail_cleaner.db import set_state
+from gmail_cleaner.auth import gmail_call, get_gmail_service
 
 
 def decode_body(data):
